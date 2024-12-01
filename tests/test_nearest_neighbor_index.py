@@ -4,6 +4,7 @@ import random
 import time
 import unittest
 import sys
+import math
 sys.path.append('../NEARESTNEIGHBOR')
 from pynn import NearestNeighborIndex
 
@@ -63,6 +64,14 @@ class NearestNeighborIndexTest(unittest.TestCase):
         print(f"slow time: {slow_time:0.2f}sec")
         print(f"new time: {new_time:0.2f}sec")
         print(f"speedup: {(slow_time / new_time):0.2f}x")
+        
+    # TODO: Add more test cases to ensure your index works in different scenarios
         for actualPoints in index_points:
             self.assertEqual(actualPoints, uut.find_nearest(actualPoints))
-    # TODO: Add more test cases to ensure your index works in different scenarios
+        for query_point in query_points:
+            nodeFast= uut.find_nearest(query_point)
+            nodeSlow = NearestNeighborIndex.find_nearest_slow(query_point, index_points)
+            distanceFast = math.sqrt((query_point[0]-nodeFast[0])**2+(query_point[1]-nodeFast[1])**2)
+            distanceSlow = math.sqrt((query_point[0]-nodeSlow[0])**2+(query_point[1]-nodeSlow[1])**2)
+            tempMsg = [query_point,nodeFast,nodeSlow,distanceFast,distanceSlow]
+            self.assertTrue(distanceFast<=distanceSlow,msg=tempMsg)

@@ -5,7 +5,7 @@ def fakedistance(point1,point2):
         #FakeDistance returns the euclidean distance between two points just without the square root
         # This is because the squareroot is not needed when comparing two distances and because
         #square root takes a lot of extra cycles. Just small optimization. 
-        return (point1[0]-point2[0])**2+(point1[0]-point2[0])**2
+        return (point1[0]-point2[0])**2+(point1[1]-point2[1])**2
 
 def closest(point,node1,node2):
     if(node1==None):
@@ -68,12 +68,11 @@ class KDTree:
             laterBranch = parent.leftChild
         temp = self.nearestNeighborRecursion(firstBranch,point,depth+1)
         best = closest(point,temp,parent)
-        
         radiusSquared = fakedistance(point,best.point)
         dist = point[axis]-parent.point[axis]
         if(radiusSquared >= dist*dist):
             temp = self.nearestNeighborRecursion(laterBranch,point,depth+1)
-            best =  closest(point,temp,parent)
+            best =  closest(point,temp,best)
         return best
     #nearestNeighbor Start function
     def nearestNeighbor(self,point):
