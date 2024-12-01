@@ -1,5 +1,68 @@
 import math
 
+def fakedistance(point1,point2):
+        #FakeDistance returns the euclidean distance between two points just without the square root
+        # This is because the squareroot is not needed when comparing two distances and because
+        #square root takes a lot of extra cycles. Just small optimization. 
+        return (point1[0]-point2[0])**2+(point1[0]-point2[0])**2
+
+def closest(point,node1,node2):
+    #Closet Finds which node is closer to a singular point.
+    if(fakedistance(point,node1.point)>fakedistance(point,node2.point)):
+        return node2
+    else:
+        return node1
+#simple node class
+class node:
+    def __init__(self,point):
+        self.point=point
+        self.leftChild = None
+        self.rightChild = None
+#KD tree implmentation
+class KDTree:
+    #dimensions variable. can be changed but is static right now for this.
+    k=2
+    def __init__(self):
+        self.head = none
+    #recursive function for insert
+    def insertRecursion(self,parent,point,depth):
+        if not parent:
+            return node(point)
+        axis = depth%k
+        #basic binary-tree style check to see where point will go
+        if point[axis] < parent.point[axis]:
+            parent.left = insert(parent.left,point,depth+1)
+        else:
+            parent.right = insert(parent.right,point,depth+1)
+        return parent
+    #insert start function
+    def insert(self,point):
+        return insertRecursion(self.head,point,0)
+    #recursive Function for nearest neighbor search
+    def nearestNeighborRecursion(self,parent,point,depth):
+        if parent ==None:
+            return
+        axis = depth%k
+        if point[axis] < parent.point[axis]:
+            firstBranch = parent.left
+            laterBranch = parent.right
+        else:
+            firstBranch = parent.right
+            laterBranch = parent.left
+        temp = nearestNeighborRecursion(firstBranch,point,depth+1)
+        best = closest(point,temp,parent)
+        
+        radiusSquared = fakedistance(point,best.point)
+        dist = point[axis]-parent.point[axis]
+        if(radiusSquared >= dist*dist):
+            temp = nearestNeighborRecursion(laterBranch,point,depth+1)
+            best =  closest(point,temp,parent)
+        return best
+    #nearestNeighbor Start function
+    def nearestNeighbor(self,point):
+        if(self.head==None):
+            return None
+        return nearestNeighborRecursion(self.head,point,0)
 
 class NearestNeighborIndex:
     """
