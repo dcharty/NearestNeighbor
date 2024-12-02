@@ -42,7 +42,7 @@ class KDTree:
         if(points==None or type(points)!=list or len(points)==0 or type(points[0])!=tuple):
             return
         for i in points:
-            self.head=self.insert(i)
+            self.insert(i)
     def __printRec(self,parent):
         """
         recursive function for printing out tree points
@@ -62,7 +62,7 @@ class KDTree:
         """
         recursive function to insert a point in the correct location in the tree
         """
-        if not parent:
+        if parent==None:
             return node(point)
         axis = depth%self.k
         #basic binary-tree style check to see where point will go
@@ -76,6 +76,9 @@ class KDTree:
         """
         Start function to insert a point into the Tree
         """
+        if(self.head==None):
+            self.head=node(point)
+            return
         return self.__insertRecursion(self.head,point,0)
     #recursive Function for nearest neighbor search
     def __nearestNeighborRecursion(self,parent,point,depth):
@@ -155,7 +158,6 @@ class NearestNeighborIndex:
         find_nearest_fast returns the point that is closest to query_point. If there are no indexed
         points, None is returned.
         """
-        
         return self.tree.nearestNeighbor(query_point)
 
     def find_nearest(self, query_point):
