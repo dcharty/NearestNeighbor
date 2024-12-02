@@ -2,9 +2,11 @@ import math
 import unittest
 
 def fakedistance(point1,point2):
-        #FakeDistance returns the euclidean distance between two points just without the square root
-        # This is because the squareroot is not needed when comparing two distances and because
-        #square root takes a lot of extra cycles. Just small optimization. 
+        """
+        FakeDistance returns the euclidean distance between two points just without the square root
+        This is because the squareroot is not needed when comparing two distances and because
+        square root takes a lot of extra cycles. Just small optimization. 
+        """
         return (point1[0]-point2[0])**2+(point1[1]-point2[1])**2
 
 def closest(point,node1,node2):
@@ -25,38 +27,65 @@ class node:
         self.rightChild = None
 #KD tree implmentation
 class KDTree:
-    #dimensions variable. can be changed but is static right now for this.
+    """
+    KD tree is used because its easy to implement and it is very versatile, especially
+    with low dimensions.
+    """
+    #dimensions variable.
     k=2
-    def __init__(self,points):
+    def __init__(self,points=None):
+        """
+        initialize function for KDTree class. Can be initialized empty or with an array of points
+        """
         self.head = None
-        if(points==None):
+        #just a check to see if points input is valid. if not it will just return with an empty tree.
+        if(points==None or type(points)!=list or len(points)==0 or type(points[0])!=tuple):
             return
         for i in points:
             self.head=self.insert(i)
-    #recursive function for insert
-    def printRec(self,parent):
+    def __printRec(self,parent):
+        """
+        recursive function for printing out tree points
+        """
         if parent==None:
             return
-        self.printRec(parent.leftChild)
+        self.__printRec(parent.leftChild)
         print(parent.point)
-        self.printRec(parent.rightChild)
+        self.__printRec(parent.rightChild)
     def printTree(self):
-        self.printRec(self.head)
-    def insertRecursion(self,parent,point,depth):
+        """
+        basic binary tree print function going from 
+        smallest/most negative point to biggest/most positive point in a 2d graph
+        """
+        self.__printRec(self.head)
+    def __insertRecursion(self,parent,point,depth):
+        """
+        recursive function to insert a point in the correct location in the tree
+        """
         if not parent:
             return node(point)
         axis = depth%self.k
         #basic binary-tree style check to see where point will go
         if point[axis] < parent.point[axis]:
-            parent.leftChild = self.insertRecursion(parent.leftChild,point,depth+1)
+            parent.leftChild = self.__insertRecursion(parent.leftChild,point,depth+1)
         else:
-            parent.rightChild = self.insertRecursion(parent.rightChild,point,depth+1)
+            parent.rightChild = self.__insertRecursion(parent.rightChild,point,depth+1)
         return parent
-    #insert start function
+    
     def insert(self,point):
-        return self.insertRecursion(self.head,point,0)
+        """
+        Start function to insert a point into the Tree
+        """
+        return self.__insertRecursion(self.head,point,0)
     #recursive Function for nearest neighbor search
-    def nearestNeighborRecursion(self,parent,point,depth):
+    def __nearestNeighborRecursion(self,parent,point,depth):
+        """
+        Nearest Neighbor Algorithm used to detect the closest point to the target
+        in a tree of points. used algorithm from this video: https://youtu.be/Glp7THUpGow
+        I went through different implementations, but I had trouble finding one
+        with a way to bypass checking the other side of the parent which would save time.
+        This one popped up
+        """
         if parent==None:
             return
         axis = depth%self.k
@@ -66,32 +95,34 @@ class KDTree:
         else:
             firstBranch = parent.rightChild
             laterBranch = parent.leftChild
-        temp = self.nearestNeighborRecursion(firstBranch,point,depth+1)
+        temp = self.__nearestNeighborRecursion(firstBranch,point,depth+1)
         best = closest(point,temp,parent)
         radiusSquared = fakedistance(point,best.point)
         dist = point[axis]-parent.point[axis]
+        #checks to see if its even worth checking the other side of the tree.
         if(radiusSquared >= dist*dist):
-            temp = self.nearestNeighborRecursion(laterBranch,point,depth+1)
+            temp = self.__nearestNeighborRecursion(laterBranch,point,depth+1)
             best =  closest(point,temp,best)
         return best
-    #nearestNeighbor Start function
     def nearestNeighbor(self,point):
+        """
+        nearestNeighbor Start function. If tree is empty, it just returns None
+        """
         if(self.head==None):
             return None
-        return self.nearestNeighborRecursion(self.head,point,0).point
+        return self.__nearestNeighborRecursion(self.head,point,0).point
 
 class NearestNeighborIndex:
     """
-    TODO give me a decent comment
-
     NearestNeighborIndex is intended to index a set of provided points to provide fast nearest
-    neighbor lookup. For now, it is simply a stub that performs an inefficient traversal of all
-    points every time.
+    neighbor lookup. 
     """
 
     def __init__(self, points):
         """
-        takes an array of 2d tuples as input points to be indexed.
+        takes an array of 2d tuples as input points to be indexed. 
+        It creates a KDtree with said points as input.
+        It also stores the points, as is to be used for find_nearest_slow. 
         """
         #print(points)
         self.points = points
@@ -129,7 +160,8 @@ class NearestNeighborIndex:
 
     def find_nearest(self, query_point):
         """
-        TODO comment me.
+        find_nearest returns the point that is closest to query_point. If there are no indexed
+        points, None is returned.
         """
         # TODO implement me so this class runs much faster.
         return self.tree.nearestNeighbor(query_point)
